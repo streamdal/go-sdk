@@ -44,7 +44,7 @@ var _ = Describe("WASM Modules", func() {
 				audiences:    map[string]struct{}{},
 			}
 
-			f, err = s.createFunction(req.Step)
+			f, err = s.createFunction(context.Background(), req.Step)
 			Expect(err).ToNot(HaveOccurred())
 
 			req.Step.XWasmBytes = nil
@@ -113,7 +113,7 @@ var _ = Describe("WASM Modules", func() {
 				audiences:    map[string]struct{}{},
 			}
 
-			f, err := s.createFunction(req.Step)
+			f, err := s.createFunction(context.Background(), req.Step)
 			Expect(err).ToNot(HaveOccurred())
 
 			req.Step.XWasmBytes = nil

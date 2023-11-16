@@ -138,7 +138,7 @@ func benchmarkWASM(wasmFile, testPayloadFile string, step *protos.PipelineStep, 
 		audiences:    map[string]struct{}{},
 	}
 
-	f, err := s.createFunction(req.Step)
+	f, err := s.createFunction(context.Background(), req.Step)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -209,7 +209,7 @@ func inferSchema(fileName string) (*protos.WASMResponse, error) {
 		audiences:    map[string]struct{}{},
 	}
 
-	f, err := s.createFunction(req.Step)
+	f, err := s.createFunction(context.Background(), req.Step)
 	if err != nil {
 		return nil, err
 	}

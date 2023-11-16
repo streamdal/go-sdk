@@ -537,7 +537,7 @@ func TestKVRequestStaticModeKeyDoesNotExist(t *testing.T) {
 	}
 
 	// Create WASM func from request
-	f, err := sdClient.createFunction(req.Step)
+	f, err := sdClient.createFunction(context.Background(), req.Step)
 	if err != nil {
 		t.Fatalf("unable to create func: %s", err)
 	}
@@ -596,7 +596,7 @@ func TestKVRequestDynamicModeKeyExists(t *testing.T) {
 	kvClient.Set("bar", "")
 
 	// Create WASM func from request
-	f, err := sdClient.createFunction(req.Step)
+	f, err := sdClient.createFunction(context.Background(), req.Step)
 	if err != nil {
 		t.Fatalf("unable to create func: %s", err)
 	}
@@ -652,7 +652,7 @@ func TestKVRequestDynamicModeKeyDoesNotExist(t *testing.T) {
 	}
 
 	// Create WASM func from request
-	f, err := sdClient.createFunction(req.Step)
+	f, err := sdClient.createFunction(context.Background(), req.Step)
 	if err != nil {
 		t.Fatalf("unable to create func: %s", err)
 	}
@@ -709,7 +709,7 @@ func TestKVRequestStaticModeKeyExists(t *testing.T) {
 	kvClient.Set(key, "")
 
 	// Create WASM func from request
-	f, err := sdClient.createFunction(req.Step)
+	f, err := sdClient.createFunction(context.Background(), req.Step)
 	if err != nil {
 		t.Fatalf("unable to create func: %s", err)
 	}
