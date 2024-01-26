@@ -91,7 +91,7 @@ var _ = Describe("Register", func() {
 		It("should attach a pipeline", func() {
 			s := &Streamdal{
 				pipelinesMtx: &sync.RWMutex{},
-				pipelines:    make(map[string]map[string]*protos.Command),
+				pipelines:    make(map[string][]*protos.Command),
 				config: &Config{
 					Logger: &loggerfakes.FakeLogger{},
 				},
@@ -132,7 +132,7 @@ var _ = Describe("Register", func() {
 
 			s := &Streamdal{
 				pipelinesMtx: &sync.RWMutex{},
-				pipelines:    make(map[string]map[string]*protos.Command),
+				pipelines:    make(map[string][]*protos.Command),
 				config: &Config{
 					Logger: &loggerfakes.FakeLogger{},
 				},
@@ -157,8 +157,8 @@ var _ = Describe("Register", func() {
 				},
 			}
 
-			s.pipelines[audToStr(aud)] = make(map[string]*protos.Command)
-			s.pipelines[audToStr(aud)][pipelineID] = cmd
+			s.pipelines[audToStr(aud)] = make([]*protos.Command, 0)
+			s.pipelines[audToStr(aud)] = append(s.pipelines[audToStr(aud)], cmd)
 
 			err = s.detachPipeline(context.Background(), cmd)
 
@@ -173,9 +173,9 @@ var _ = Describe("Register", func() {
 
 			s := &Streamdal{
 				pipelinesPausedMtx: &sync.RWMutex{},
-				pipelinesPaused:    make(map[string]map[string]*protos.Command),
+				pipelinesPaused:    make(map[string][]*protos.Command),
 				pipelinesMtx:       &sync.RWMutex{},
-				pipelines:          make(map[string]map[string]*protos.Command),
+				pipelines:          make(map[string][]*protos.Command),
 				config: &Config{
 					Logger: &loggerfakes.FakeLogger{},
 				},
@@ -206,8 +206,8 @@ var _ = Describe("Register", func() {
 
 			}
 
-			s.pipelines[audToStr(aud)] = make(map[string]*protos.Command)
-			s.pipelines[audToStr(aud)][pipelineID] = attachCmd
+			s.pipelines[audToStr(aud)] = make([]*protos.Command, 0)
+			s.pipelines[audToStr(aud)] = append(s.pipelines[audToStr(aud)], attachCmd)
 
 			pauseCmd := &protos.Command{
 				Audience: aud,
@@ -234,9 +234,9 @@ var _ = Describe("Register", func() {
 
 			s := &Streamdal{
 				pipelinesPausedMtx: &sync.RWMutex{},
-				pipelinesPaused:    make(map[string]map[string]*protos.Command),
+				pipelinesPaused:    make(map[string][]*protos.Command),
 				pipelinesMtx:       &sync.RWMutex{},
-				pipelines:          make(map[string]map[string]*protos.Command),
+				pipelines:          make(map[string][]*protos.Command),
 				config: &Config{
 					Logger: &loggerfakes.FakeLogger{},
 				},
@@ -275,8 +275,8 @@ var _ = Describe("Register", func() {
 				},
 			}
 
-			s.pipelinesPaused[audToStr(aud)] = make(map[string]*protos.Command)
-			s.pipelinesPaused[audToStr(aud)][pipelineID] = attachCmd
+			s.pipelinesPaused[audToStr(aud)] = make([]*protos.Command, 0)
+			s.pipelinesPaused[audToStr(aud)] = append(s.pipelinesPaused[audToStr(aud)], attachCmd)
 
 			err = s.resumePipeline(context.Background(), resumeCmd)
 			Expect(err).To(BeNil())

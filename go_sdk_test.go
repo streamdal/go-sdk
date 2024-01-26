@@ -157,7 +157,7 @@ var _ = Describe("Streamdal", func() {
 
 		s := &Streamdal{
 			pipelinesMtx: &sync.RWMutex{},
-			pipelines:    map[string]map[string]*protos.Command{},
+			pipelines:    make(map[string][]*protos.Command),
 			serverClient: fakeClient,
 			audiencesMtx: &sync.RWMutex{},
 			audiences:    map[string]struct{}{},
@@ -182,8 +182,16 @@ var _ = Describe("Streamdal", func() {
 		})
 
 		It("returns a single pipeline", func() {
-			s.pipelines[audToStr(aud)] = map[string]*protos.Command{
-				uuid.New().String(): {},
+			s.pipelines[audToStr(aud)] = []*protos.Command{
+				&protos.Command{
+					Command: &protos.Command_AttachPipeline{
+						AttachPipeline: &protos.AttachPipelineCommand{
+							Pipeline: &protos.Pipeline{
+								Id: uuid.New().String(),
+							},
+						},
+					},
+				},
 			}
 			Expect(len(s.getPipelines(ctx, aud))).To(Equal(1))
 		})
@@ -536,9 +544,9 @@ func createStreamdalClientFull(serviceName string, aud *protos.Audience, pipelin
 		tails:        map[string]map[string]*Tail{},
 		tailsMtx:     &sync.RWMutex{},
 		pipelinesMtx: &sync.RWMutex{},
-		pipelines: map[string]map[string]*protos.Command{
+		pipelines: map[string][]*protos.Command{
 			audToStr(aud): {
-				pipeline.Id: {
+				{
 					Audience: aud,
 					Command: &protos.Command_AttachPipeline{
 						AttachPipeline: &protos.AttachPipelineCommand{
@@ -564,7 +572,7 @@ func createStreamdalClient() (*Streamdal, *kv.KV, error) {
 
 	return &Streamdal{
 		pipelinesMtx: &sync.RWMutex{},
-		pipelines:    map[string]map[string]*protos.Command{},
+		pipelines:    map[string][]*protos.Command{},
 		audiencesMtx: &sync.RWMutex{},
 		audiences:    map[string]struct{}{},
 		kv:           kvClient,
