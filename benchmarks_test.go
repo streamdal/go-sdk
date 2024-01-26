@@ -133,7 +133,7 @@ func benchmarkWASM(wasmFile, testPayloadFile string, step *protos.PipelineStep, 
 
 	s := &Streamdal{
 		pipelinesMtx: &sync.RWMutex{},
-		pipelines:    map[string]map[string]*protos.Command{},
+		pipelines:    map[string][]*protos.Command{},
 		audiencesMtx: &sync.RWMutex{},
 		audiences:    map[string]struct{}{},
 	}
@@ -204,7 +204,7 @@ func inferSchema(fileName string) (*protos.WASMResponse, error) {
 
 	s := &Streamdal{
 		pipelinesMtx: &sync.RWMutex{},
-		pipelines:    map[string]map[string]*protos.Command{},
+		pipelines:    map[string][]*protos.Command{},
 		audiencesMtx: &sync.RWMutex{},
 		audiences:    map[string]struct{}{},
 	}

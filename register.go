@@ -193,11 +193,18 @@ func (s *Streamdal) handleCommand(ctx context.Context, cmd *protos.Command) erro
 		s.config.Logger.Debug("Received kv command")
 		err = s.handleKVCommand(ctx, cmd.GetKv())
 	case *protos.Command_AttachPipeline:
-		s.config.Logger.Debug("Received attach pipeline command")
-		err = s.attachPipeline(ctx, cmd)
+		err = errors.New("Received attach pipeline command, this should not happen anymore")
+		s.config.Logger.Warn(err)
+		return err
 	case *protos.Command_DetachPipeline:
-		s.config.Logger.Debug("Received detach pipeline command")
-		err = s.detachPipeline(ctx, cmd)
+		err = errors.New("Received detach pipeline command, this should not happen anymore")
+		s.config.Logger.Warn(err)
+		return err
+	//s.config.Logger.Debug("Received detach pipeline command")
+	//err = s.detachPipeline(ctx, cmd)
+	case *protos.Command_PipelineList:
+		s.config.Logger.Debug("Received set pipelines command")
+		err = s.setPipelines(ctx, cmd)
 	case *protos.Command_PausePipeline:
 		s.config.Logger.Debug("Received pause pipeline command")
 		err = s.pausePipeline(ctx, cmd)
@@ -281,48 +288,31 @@ func (s *Streamdal) handleKVCommand(_ context.Context, kv *protos.KVCommand) err
 	return nil
 }
 
-func (s *Streamdal) attachPipeline(_ context.Context, cmd *protos.Command) error {
-	if cmd == nil {
-		return ErrEmptyCommand
-	}
-
+func (s *Streamdal) setPipelines(_ context.Context, cmd *protos.Command) error {
 	s.pipelinesMtx.Lock()
 	defer s.pipelinesMtx.Unlock()
 
 	if _, ok := s.pipelines[audToStr(cmd.Audience)]; !ok {
-		s.pipelines[audToStr(cmd.Audience)] = make(map[string]*protos.Command)
+		s.pipelines[audToStr(cmd.Audience)] = make([]*protos.Pipeline, 0)
 	}
 
-	s.pipelines[audToStr(cmd.Audience)][cmd.GetAttachPipeline().Pipeline.Id] = cmd
+	s.pipelines[audToStr(cmd.Audience)] = cmd.GetPipelineList().Pipelines
 
-	s.config.Logger.Debugf("Attached pipeline %s", cmd.GetAttachPipeline().Pipeline.Id)
+	s.config.Logger.Debugf("Set '%d' pipelines for audience '%s'",
+		len(cmd.GetPipelineList().Pipelines), audToStr(cmd.Audience))
 
 	return nil
 }
 
-func (s *Streamdal) detachPipeline(_ context.Context, cmd *protos.Command) error {
-	if cmd == nil {
-		return ErrEmptyCommand
+// Looks for pipelineID in pipeline slice and returns index if found, -1 otherwise
+func getPipelineIndex(pipelines []*protos.Pipeline, pipelineID string) int {
+	for i, p := range pipelines {
+		if p.Id == pipelineID {
+			return i
+		}
 	}
 
-	s.pipelinesMtx.Lock()
-	defer s.pipelinesMtx.Unlock()
-
-	audStr := audToStr(cmd.Audience)
-
-	if _, ok := s.pipelines[audStr]; !ok {
-		return nil
-	}
-
-	delete(s.pipelines[audStr], cmd.GetDetachPipeline().PipelineId)
-
-	if len(s.pipelines[audStr]) == 0 {
-		delete(s.pipelines, audStr)
-	}
-
-	s.config.Logger.Debugf("Detached pipeline %s", cmd.GetDetachPipeline().PipelineId)
-
-	return nil
+	return -1
 }
 
 func (s *Streamdal) pausePipeline(_ context.Context, cmd *protos.Command) error {
@@ -341,22 +331,22 @@ func (s *Streamdal) pausePipeline(_ context.Context, cmd *protos.Command) error 
 		return ErrPipelineNotActive
 	}
 
-	pipeline, ok := s.pipelines[audStr][cmd.GetPausePipeline().PipelineId]
-	if !ok {
-		return ErrPipelineNotActive
+	updatedPipelines := make([]*protos.Pipeline, 0)
+
+	for idx, pipeline := range s.pipelines[audStr] {
+		if pipeline.Id == cmd.GetPausePipeline().PipelineId {
+			if _, ok := s.pipelinesPaused[audStr]; !ok {
+				// TODO: ensure the length gets set properly when new SetPipelinesCommand is received
+				s.pipelinesPaused[audStr] = make([]*protos.Pipeline, len(s.pipelines[audStr]))
+			}
+
+			s.pipelinesPaused[audStr][idx] = pipeline
+		} else {
+			updatedPipelines = append(updatedPipelines, pipeline)
+		}
 	}
 
-	if _, ok := s.pipelinesPaused[audStr]; !ok {
-		s.pipelinesPaused[audStr] = make(map[string]*protos.Command)
-	}
-
-	s.pipelinesPaused[audStr][cmd.GetPausePipeline().PipelineId] = pipeline
-
-	delete(s.pipelines[audStr], cmd.GetPausePipeline().PipelineId)
-
-	if len(s.pipelines[audStr]) == 0 {
-		delete(s.pipelines, audStr)
-	}
+	s.pipelines[audStr] = updatedPipelines
 
 	return nil
 }
@@ -377,22 +367,25 @@ func (s *Streamdal) resumePipeline(_ context.Context, cmd *protos.Command) error
 		return ErrPipelineNotPaused
 	}
 
-	pipeline, ok := s.pipelinesPaused[audStr][cmd.GetResumePipeline().PipelineId]
-	if !ok {
-		return ErrPipelineNotPaused
+	updatedPaused := make([]*protos.Pipeline, 0)
+
+	for idx, pipeline := range s.pipelines[audStr] {
+		if pipeline.Id == cmd.GetResumePipeline().PipelineId {
+			if _, ok := s.pipelines[audStr]; !ok {
+				s.pipelines[audStr] = make([]*protos.Pipeline, len(s.pipelinesPaused[audStr]))
+			}
+
+			if s.pipelines[audStr][idx] != nil {
+				return errors.New("BUG: found pipeline in paused list that already exists in active list")
+			}
+
+			s.pipelines[audStr][idx] = pipeline
+		} else {
+			updatedPaused = append(updatedPaused, pipeline)
+		}
 	}
 
-	if _, ok := s.pipelines[audStr]; !ok {
-		s.pipelines[audStr] = make(map[string]*protos.Command)
-	}
-
-	s.pipelines[audStr][cmd.GetResumePipeline().PipelineId] = pipeline
-
-	delete(s.pipelinesPaused[audStr], cmd.GetResumePipeline().PipelineId)
-
-	if len(s.pipelinesPaused[audStr]) == 0 {
-		delete(s.pipelinesPaused, audStr)
-	}
+	s.pipelinesPaused[audStr] = updatedPaused
 
 	return nil
 }

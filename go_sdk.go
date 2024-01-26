@@ -100,8 +100,8 @@ type IStreamdal interface {
 type Streamdal struct {
 	config             *Config
 	functions          map[string]*function
-	pipelines          map[string]map[string]*protos.Command // k1: audienceStr k2: pipelineID
-	pipelinesPaused    map[string]map[string]*protos.Command // k1: audienceStr k2: pipelineID
+	pipelines          map[string][]*protos.Pipeline // k1: audienceStr
+	pipelinesPaused    map[string][]*protos.Pipeline // k1: audienceStr
 	functionsMtx       *sync.RWMutex
 	pipelinesMtx       *sync.RWMutex
 	pipelinesPausedMtx *sync.RWMutex
@@ -233,9 +233,9 @@ func New(cfg *Config) (*Streamdal, error) {
 		functions:          make(map[string]*function),
 		functionsMtx:       &sync.RWMutex{},
 		serverClient:       serverClient,
-		pipelines:          make(map[string]map[string]*protos.Command),
+		pipelines:          make(map[string][]*protos.Pipeline),
 		pipelinesMtx:       &sync.RWMutex{},
-		pipelinesPaused:    make(map[string]map[string]*protos.Command),
+		pipelinesPaused:    make(map[string][]*protos.Pipeline),
 		pipelinesPausedMtx: &sync.RWMutex{},
 		audiences:          map[string]struct{}{},
 		audiencesMtx:       &sync.RWMutex{},
