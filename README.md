@@ -55,14 +55,14 @@ func main() {
 		ComponentName: "kafka",
 		Data:          []byte(`{"object": {"field": true}}`),
 	})
-
+	
 	// Check if the .Process() call completed
-	if resp.Status != streamdal.StatusError {
+	if resp.Status != streamdal.ExecStatusError {
 		fmt.Println("Successfully processed payload")
 	}
 
 	// Or you can inspect each individual pipeline & step result
-	for _, pipeline := resp.PipelineStatus {
+	for _, pipeline := range resp.PipelineStatus {
 		fmt.Printf("Inspecting '%d' steps in pipeline '%s'...\n", len(resp.PipelineStatus), pipeline.Name)
 
 		for _, step := range pipeline.StepStatus {

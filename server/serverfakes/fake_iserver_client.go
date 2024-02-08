@@ -63,7 +63,7 @@ type FakeIServerClient struct {
 	newAudienceReturnsOnCall map[int]struct {
 		result1 error
 	}
-	NotifyStub        func(context.Context, *protos.Pipeline, *protos.PipelineStep, *protos.Audience, []byte, *protos.PipelineStepNotification) error
+	NotifyStub        func(context.Context, *protos.Pipeline, *protos.PipelineStep, *protos.Audience, []byte, protos.NotifyRequest_ConditionType) error
 	notifyMutex       sync.RWMutex
 	notifyArgsForCall []struct {
 		arg1 context.Context
@@ -71,7 +71,7 @@ type FakeIServerClient struct {
 		arg3 *protos.PipelineStep
 		arg4 *protos.Audience
 		arg5 []byte
-		arg6 *protos.PipelineStepNotification
+		arg6 protos.NotifyRequest_ConditionType
 	}
 	notifyReturns struct {
 		result1 error
@@ -386,7 +386,7 @@ func (fake *FakeIServerClient) NewAudienceReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIServerClient) Notify(arg1 context.Context, arg2 *protos.Pipeline, arg3 *protos.PipelineStep, arg4 *protos.Audience, arg5 []byte, arg6 *protos.PipelineStepNotification) error {
+func (fake *FakeIServerClient) Notify(arg1 context.Context, arg2 *protos.Pipeline, arg3 *protos.PipelineStep, arg4 *protos.Audience, arg5 []byte, arg6 protos.NotifyRequest_ConditionType) error {
 	var arg5Copy []byte
 	if arg5 != nil {
 		arg5Copy = make([]byte, len(arg5))
@@ -400,7 +400,7 @@ func (fake *FakeIServerClient) Notify(arg1 context.Context, arg2 *protos.Pipelin
 		arg3 *protos.PipelineStep
 		arg4 *protos.Audience
 		arg5 []byte
-		arg6 *protos.PipelineStepNotification
+		arg6 protos.NotifyRequest_ConditionType
 	}{arg1, arg2, arg3, arg4, arg5Copy, arg6})
 	stub := fake.NotifyStub
 	fakeReturns := fake.notifyReturns
@@ -421,13 +421,13 @@ func (fake *FakeIServerClient) NotifyCallCount() int {
 	return len(fake.notifyArgsForCall)
 }
 
-func (fake *FakeIServerClient) NotifyCalls(stub func(context.Context, *protos.Pipeline, *protos.PipelineStep, *protos.Audience, []byte, *protos.PipelineStepNotification) error) {
+func (fake *FakeIServerClient) NotifyCalls(stub func(context.Context, *protos.Pipeline, *protos.PipelineStep, *protos.Audience, []byte, protos.NotifyRequest_ConditionType) error) {
 	fake.notifyMutex.Lock()
 	defer fake.notifyMutex.Unlock()
 	fake.NotifyStub = stub
 }
 
-func (fake *FakeIServerClient) NotifyArgsForCall(i int) (context.Context, *protos.Pipeline, *protos.PipelineStep, *protos.Audience, []byte, *protos.PipelineStepNotification) {
+func (fake *FakeIServerClient) NotifyArgsForCall(i int) (context.Context, *protos.Pipeline, *protos.PipelineStep, *protos.Audience, []byte, protos.NotifyRequest_ConditionType) {
 	fake.notifyMutex.RLock()
 	defer fake.notifyMutex.RUnlock()
 	argsForCall := fake.notifyArgsForCall[i]

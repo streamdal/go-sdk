@@ -231,7 +231,7 @@ var _ = Describe("Streamdal", func() {
 				},
 			}
 
-			cond := s.handleCondition(context.Background(), req, &ProcessResponse{}, condition, step, pipeline, aud)
+			cond := s.handleCondition(context.Background(), req, &ProcessResponse{}, condition, step, pipeline, aud, protos.NotifyRequest_CONDITION_TYPE_ON_TRUE)
 
 			Expect(cond.abortCondition).To(Equal(protos.AbortCondition_ABORT_CONDITION_UNSET))
 			Expect(cond.abortCurrent).To(BeFalse())
@@ -244,7 +244,7 @@ var _ = Describe("Streamdal", func() {
 				Abort: protos.AbortCondition_ABORT_CONDITION_ABORT_CURRENT,
 			}
 
-			cond := s.handleCondition(context.Background(), req, &ProcessResponse{}, condition, step, pipeline, aud)
+			cond := s.handleCondition(context.Background(), req, &ProcessResponse{}, condition, step, pipeline, aud, protos.NotifyRequest_CONDITION_TYPE_ON_TRUE)
 			Expect(cond.abortCondition).To(Equal(protos.AbortCondition_ABORT_CONDITION_ABORT_CURRENT))
 			Expect(cond.abortCurrent).To(BeTrue())
 		})
