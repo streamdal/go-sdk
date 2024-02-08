@@ -224,7 +224,11 @@ var _ = Describe("Streamdal", func() {
 
 		It("handles notify condition", func() {
 			condition := &protos.PipelineStepConditions{
-				Notify: true,
+				Notification: &protos.PipelineStepNotification{
+					NotificationConfigIds: []string{uuid.New().String()},
+					PayloadType:           2,
+					Paths:                 []string{},
+				},
 			}
 
 			cond := s.handleCondition(context.Background(), req, &ProcessResponse{}, condition, step, pipeline, aud)

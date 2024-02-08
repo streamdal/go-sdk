@@ -889,10 +889,10 @@ func (s *Streamdal) handleCondition(
 	}
 
 	// Should we notify?
-	if stepCond.Notify && !s.config.DryRun {
+	if stepCond.Notification != nil && !s.config.DryRun {
 		s.config.Logger.Debugf("Performing 'notify' condition for step '%s'", step.Name)
 
-		if err := s.serverClient.Notify(ctx, pipeline, step, aud); err != nil {
+		if err := s.serverClient.Notify(ctx, pipeline, step, aud, resp.Data, stepCond.Notification); err != nil {
 			s.config.Logger.Errorf("failed to notify condition: %s", err)
 		}
 
