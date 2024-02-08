@@ -159,7 +159,7 @@ type Config struct {
 	DryRun bool
 
 	// ShutdownCtx is a context that the library will listen to for cancellation
-	// notices. Optional; default: nil
+	// notices. Required
 	ShutdownCtx context.Context
 
 	// Logger is a logger you can inject (such as logrus) to allow this library
