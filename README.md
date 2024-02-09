@@ -1,4 +1,6 @@
-# Streamdal Go SDK
+# MOVED TO [github.com/streamdal/streamdal/sdks/go](https://github.com/streamdal/streamdal/tree/main/sdks/go)
+
+## Streamdal Go SDK
 
 
 [![Master build status](https://github.com/streamdal/go-sdk/workflows/main/badge.svg)](https://github.com/streamdal/go-sdk/actions/workflows/main-test.yml)
